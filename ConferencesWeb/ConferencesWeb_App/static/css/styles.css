@@ -1,0 +1,424 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+.divHeader
+{
+    background-color:#ffffff;
+    height:74px;
+    width:80%;
+    filter:drop-shadow(0px 4px 10px rgba(0.3529411852359772,0.4470588266849518,0.7098039388656616,1));
+    border-radius:0px 0px 16px 16px;
+    padding:0px;
+    left:10%;
+    top:-10px;
+    position:relative;
+    position:fixed;
+    z-index: 100;
+}
+    
+.btnhome
+{
+background-color:#ffffff;
+border-style:hidden;
+outline:none;
+position:absolute;
+top:15%;
+text-decoration: none;
+color:#5a72b5;
+text-align:center;
+vertical-align:text-top;
+font-size:40px;
+font-family:Inter;
+line-height:auto;
+width:482px;
+font-weight: bold;
+}
+
+.SearchScientists
+{
+    background-color:#ffffff;
+    height:20px;
+    width:650px;
+    border-radius:6px;
+    padding-left:16px;
+    padding-right:16px;
+    padding-top:9px;
+    padding-bottom:9px;
+    left:410px;
+    top:95px;
+    position:absolute;
+}
+
+.basket_count
+{
+    position:relative;
+    color:#ffffff;
+    font-size:15px;
+    font-family: "Inter", sans-serif;
+    outline:none;
+    left:66%;
+    bottom: 96%;
+}
+    
+.Conference_div
+{
+    width:60px;
+    height:60px;
+    left:85%;
+    top:85px;
+    position:absolute;
+}
+    
+.imagebusket
+{
+height:60px;
+width:60px;
+position:relative;
+}
+
+.scientists_list
+{
+list-style-type: none;
+display: flex;
+flex-direction: row;
+flex-wrap: wrap;
+height:20%;
+width:70%;
+top:140px;
+left: 13.5%;
+gap: 40px;
+position:absolute;
+}
+
+.divscientist
+{
+    background-color:#ffffff;
+    height:370px;
+    width:300px;
+    filter:drop-shadow(0px 4px 10px rgba(0,0,0,0.75));
+    border-radius:16px;
+    padding-top:15px;
+    padding-bottom:15px;
+    position:relative;
+}
+
+.scientist_card_img
+{
+    height:289px;
+    width:225px;
+    border-radius:16px;
+    border:1px solid #ffffff;
+    left:37.5px;
+    top:15px;
+    position:absolute;
+    
+}
+
+.scientist_card_data
+{
+    height:70px;
+width:301px;
+padding-left:17px;
+padding-right:17px;
+padding-top:15px;
+padding-bottom:15px;
+display:flex;
+flex-direction:column;
+top:290px;
+position:relative;
+}
+
+.scientist_card_name
+{
+    color:#000000;
+    text-align:left;
+    vertical-align:text-top;
+    font-size:20px;
+    font-family:Roboto;
+    line-height:20px;
+    border-style:hidden;
+    outline:none;
+    width:267px;
+    
+}
+
+.scientist_card_department
+{
+    color:#212529;
+    text-align:left;
+    vertical-align:text-top;
+    font-size:18px;
+    font-family:Roboto;
+    border-style:hidden;
+    outline:none;
+    line-height:auto;
+    width:300px;
+    position: absolute;
+    bottom: 20px;
+}
+
+.scientists_link
+{
+text-decoration: none;
+}
+
+
+.single_scientist
+{
+    background-color:#ffffff;
+    height:500px;
+    width:80%;
+    border:1px solid #BABABA;
+    border-radius:20px;
+    top:100px;
+    left: 10%;
+    position: relative;
+
+}
+
+.single_scientist_image
+{
+position:relative;
+height:450px;
+width:380px;
+left:25px;
+top:25px;
+border-radius:20px;
+}
+
+.single_scientist_name
+{
+    color:#000000;
+    text-align:left;
+    vertical-align:text-top;
+    font-size:36px;
+    font-family:Roboto;
+    line-height:39px;
+    border-style:hidden;
+    outline:none;
+    width:700px;
+    position: absolute;
+    top: 30px;
+    left: 35%;
+    font-weight: bold;
+}
+
+.single_scientist_description
+{
+position:absolute;
+color:#000000;
+text-align:left;
+vertical-align:text-top;
+font-size:24px;
+font-family:Roboto;
+line-height:auto;
+border-style:hidden;
+outline:none;
+width:60%;
+left:35%;
+top:180px;
+}
+
+.single_scientist_department
+{
+position:absolute;
+color:#000000;
+text-align:left;
+vertical-align:text-top;
+font-size:24px;
+font-family:Roboto;
+line-height:auto;
+border-style:hidden;
+outline:none;
+width:300px;
+left:35%;
+top:100px;
+}
+
+.single_scientist_birthdate
+{
+position:absolute;
+color:#000000;
+text-align:left;
+vertical-align:text-top;
+font-size:24px;
+font-family:Roboto;
+line-height:auto;
+border-style:hidden;
+outline:none;
+width:350px;
+left:35%;
+top:140px;
+}
+
+
+
+
+.Conference_subheader{
+    color:#000000;
+text-align:left;
+vertical-align:text-top;
+font-size:30px;
+font-family:Roboto;
+line-height:39px;
+border-style:hidden;
+outline:none;
+width:353px;
+font-weight: bold;
+left: 10%;
+position: relative;
+}
+
+.Conference_dscr{
+list-style-type: none;
+display: flex;
+flex-direction: column;
+height: 200px;
+width:400px;
+top:80px;
+left: 10%;
+position:relative;
+}
+
+.Conference_theme{
+    height:43px;
+    font-size:22px;
+width:1249px;
+padding:20px;
+display:flex;
+flex-direction:column;
+left:30%;
+font-weight: bold;
+position:relative;
+}
+
+.ConferenceParamsInp
+{
+    font-size:22px;
+    font-family:Roboto;
+background-color:#ffffff;
+height:33px;
+width:250px;
+border:1px solid #BABABA;
+position:relative;
+left:5%;
+
+}
+
+.ConferenceParamText
+{
+    font-size:22px;
+font-family:Roboto;
+background-color:#ffffff;
+height:33px;
+width:100px;
+position:relative;
+top:5px;
+left:5%;
+}
+
+.ConferenceParamBox
+{
+background-color:#ffffff;
+height:33px;
+width:500px;
+position:relative;
+flex-direction: row;
+display: flex;
+margin-bottom: 7px;
+left:30%
+}
+
+.Conference_card_list
+{
+display: flex;
+flex-direction: column;
+height:100%;
+width:80%;
+top:100px;
+left: 8%;
+position:relative;
+gap:25px;
+
+}
+
+.Conference_scientist_rectangle
+{
+width:70%;
+height:200px;
+border:2px solid #BABABA;
+border-radius: 16px;
+position:relative
+}
+
+.Conference_card_name
+{
+    color:#000000;
+    text-align:left;
+    vertical-align:text-top;
+    font-size:22px;
+    font-family:Roboto;
+    line-height:auto;
+    border-style:hidden;
+    outline:none;
+    left:220px;
+    top: 40%;
+    position:absolute;
+    width:30%;
+}
+
+.Conference_card_img
+{
+height:200px;
+width:180px;
+left: 15px;  
+position:relative;
+object-fit: cover;
+}
+
+.manager_text{
+    color:#000000;
+    text-align:left;
+    vertical-align:text-top;
+    font-size:22px;
+    font-family:Roboto;
+    line-height:auto;
+    border-style:hidden;
+    outline:none;
+    left:900px;
+    top: 40%;
+    position:absolute;
+    width:30%;
+}
+
+input:checked {
+    border: none;
+    outline: 2px solid deeppink;
+  }
+
+  
+.manager_checkbox{
+    position: relative;
+    width: 30px;
+    height: 30px;
+    left: 900px;
+    bottom: 45%;
+
+}
+
+.Conference_card_department
+{
+color:#000000;
+text-align:left;
+vertical-align:text-top;
+font-size:22px;
+font-family:Roboto;
+line-height:auto;
+border-style:hidden;
+outline:none;
+position:absolute;
+width:220px;
+left: 650px;
+top: 40%;
+}

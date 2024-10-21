@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<ui class = "Conference_dscr">
+    <div class = "Conference_subheader"> Тема конференции:</div>
+    <div class = "Conference_theme"> {{ data.cur_conference.theme }}</div>
+    <ui class = "ConferenceParamBox"></div>
+        <div class = "ConferenceParamText"> Начало:</div>
+        <input name = "StartDate" type = "text" class = ConferenceParamsInp value="{{ data.cur_conference.Start_Date }}" autocomplete="off"></input>
+    </ui>
+    <ui class = "ConferenceParamBox"></div>
+        <div class = "ConferenceParamText"> Конец:</div>
+        <input name = "EndDate" type = "text" class = ConferenceParamsInp value="{{ data.cur_conference.End_date }}" autocomplete="off"></input>
+    </ui>
+</ui>
+
+
+<ul class = "Conference_card_list">
+    {% for Scientist in data.Scientists %}
+        <div class = "Conference_scientist_rectangle">
+            <img class = "Conference_card_img" src = "{{Scientist.image}}" >
+            <div class = "Conference_card_name"> {{Scientist.name}}</div> 
+            <div class = "manager_text"> Руководитель:</div>
+            <label><input type="checkbox" class="manager_checkbox" id="happy" name="happy" value="yes"></label>
+            <div class = "Conference_card_department"> {{Scientist.department}}</div> 
+        </div>
+    {% endfor %}
+</ul>
+
+{% endblock %}

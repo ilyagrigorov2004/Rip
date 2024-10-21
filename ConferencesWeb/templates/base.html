@@ -1,0 +1,19 @@
+{% load static %}
+
+
+<!doctype html>
+<html lang="en" class="h-100">
+<head>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/styles.css' %}">
+  <meta charset="utf-8">
+        <title>Конференции МГТУ</title>
+</head>
+<body>
+    <div class="divHeader">
+        <a class = "btnhome" href = "{% url 'main_url'%}">Конференции МГТУ</a>
+    </div>
+    {% block content %}
+    {% endblock %}
+
+</body>
+</html>
