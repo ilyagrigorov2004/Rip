@@ -5,10 +5,10 @@
 <a href = "{%url 'Conferences_url' data.Conference_id%}" >
     <div class = Conference_div>
     {%if data.ConferenceMembersCount > 0 %}
-    <img class = "imagebusket" src= 'http://localhost:9000/autorsimgs/full_basket.png'>
+    <img class = "imagebusket" src= 'http://localhost:9000/conferencesimgs/full_basket.png'>
         <div class="basket_count">{{data.ConferenceMembersCount}}</div>
     {%else%}
-    <img class = "imagebusket" src= 'http://localhost:9000/autorsimgs/empty_basket.png'>
+    <img class = "imagebusket" src= 'http://localhost:9000/conferencesimgs/empty_basket.png'>
     {%endif%}
 </div>
 </a>
