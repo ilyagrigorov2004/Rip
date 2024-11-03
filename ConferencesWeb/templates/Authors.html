@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+{% if data.Conference_id != -1%}
+<a href = "{%url 'Conferences_url' data.Conference_id%}" >
+{%endif%}
+    <div class = Conference_div>
+    {%if data.ConferenceMembersCount > 0 %}
+    <img class = "imagebusket" src= 'http://localhost:9000/conferencesimgs/full_basket.png'>
+        <div class="basket_count">{{data.ConferenceMembersCount}}</div>
+    {%else%}
+    <img class = "imagebusket" src= 'http://localhost:9000/conferencesimgs/empty_basket.png'>
+    {%endif%}
+</div>
+</a>
+<form action = "{%url 'main_url'%}" method = get>
+    <input name = "search_author" type = "text" class = SearchAuthors value="{{ search_author }}" placeholder = "Поиск по сайту" autocomplete="off"></input>
+</form>
+
+<ul class = "authors_list">
+    {% for Author in data.Authors %}
+            <a class = "authors_link" href="{% url 'Author_url' Author.author_id %}">
+                <div class = divauthor>
+                    <img class = "author_card_img" src = "{{Author.url}}" >
+                    <div class = "author_card_data">
+                        <div class = "author_card_name"> {{Author.name}}</div> 
+                        <div class = "author_card_department"> {{Author.department}}</div>
+                    </div> 
+                    <form action = "{%url 'add_author_url' Author.author_id%}" method = post>
+                        {% csrf_token %}
+                        <button name = "addAuthorToConf" type = "submit" class = "addAuthorBtn">Добавить</button>
+                    </form>
+                </div>
+            </a> 
+    {% empty %}
+        <li>Список пуст</li>
+    {% endfor %}
+</ul>
+
+{% endblock %}
