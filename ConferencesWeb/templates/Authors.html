@@ -13,17 +13,17 @@
 </div>
 </a>
 <form action = "{%url 'main_url'%}" method = get>
-    <input name = "search_scientist" type = "text" class = SearchScientists value="{{ search_scientist }}" placeholder = "Поиск по сайту" autocomplete="off"></input>
+    <input name = "search_author" type = "text" class = SearchAuthor value="{{ search_author }}" placeholder = "Поиск по сайту" autocomplete="off"></input>
 </form>
 
-<ul class = "scientists_list">
-    {% for Scientist in data.Scientists %}
-            <a class = "scientists_link" href="{% url 'Scientist_url' Scientist.id %}">
-                <div class = divscientist>
-                    <img class = "scientist_card_img" src = "{{Scientist.image}}" >
-                    <div class = "scientist_card_data">
-                        <div class = "scientist_card_name"> {{Scientist.name}}</div> 
-                        <div class = "scientist_card_department"> {{Scientist.department}}</div>
+<ul class = "Authors_list">
+    {% for Author in data.Authors %}
+            <a class = "Authors_link" href="{% url 'Author_url' Author.id %}">
+                <div class = "divauthor">
+                    <img class = "author_card_img" src = "{{Author.image}}" >
+                    <div class = "author_card_data">
+                        <div class = "author_card_name"> {{Author.name}}</div> 
+                        <div class = "author_card_department"> {{Author.department}}</div>
                     </div> 
                 </div>
             </a> 

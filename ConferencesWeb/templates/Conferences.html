@@ -18,13 +18,18 @@
 
 
 <ul class = "Conference_card_list">
-    {% for Scientist in data.Scientists %}
-        <div class = "Conference_scientist_rectangle">
-            <img class = "Conference_card_img" src = "{{Scientist.image}}" >
-            <div class = "Conference_card_name"> {{Scientist.name}}</div> 
-            <div class = "manager_text"> Руководитель:</div>
-            <label><input type="checkbox" class="manager_checkbox" id="happy" name="happy" value="yes"></label>
-            <div class = "Conference_card_department"> {{Scientist.department}}</div> 
+    {% for Author in data.Authors %}
+        <div class = "Conference_author_rectangle">
+            <img class = "Conference_card_img" src = "{{Author.image}}" >
+            <div class = "Conference_card_name"> {{Author.name}}</div> 
+            <div class = "leader_text"> Руководитель:</div>
+
+            {%if data.cur_conference.LeaderId == Author.id %}
+                <label><input type="checkbox" class="leader_checkbox" checked></label>
+            {%else%}
+                <label><input type="checkbox" class="leader_checkbox" ></label>
+            {%endif%}
+            <div class = "Conference_card_department"> {{Author.department}}</div> 
         </div>
     {% endfor %}
 </ul>

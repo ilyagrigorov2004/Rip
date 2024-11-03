@@ -8,25 +8,28 @@ Conferences_list = [
         'theme': 'Необратимые процессы в природе и технике',
         'start_datetime':'',
         'end_datetime':'',
-        'ItemIds':[1, 2, 3]
+        'ItemIds':[1, 2, 3],
+        'is': 2
     },
     {
         'id': 2,
         'theme': 'Физические интерпретации теории относительности',
         'start_datetime':'',
         'end_datetime':'',
-        'ItemIds':[]
+        'ItemIds':[],
+        'LeaderId': -1
     },
     {
         'id': 3,
         'theme': 'Применение квантовой физики в медицинских исследованиях',
         'start_datetime':'',
         'end_datetime':'',
-        'ItemIds':[3, 4, 5, 1]
+        'ItemIds':[3, 4, 5, 1],
+        'LeaderId': 4
     }
 ]
 
-Scientists_list = [
+Authors_list = [
     {'image': 'http://localhost:9000/conferencesimgs/img1.png',
     'name': 'Иванов Иван Иванович',
     'description':'Макроэкономика, Экономическая политика, Региональное развитие, Международная экономика, Институциональная экономика, Фискальная политика, Инновационная экономика, Экономическое неравенство, Экологическая экономика, Экономика труда.',
@@ -71,7 +74,7 @@ Scientists_list = [
     }
 ]
 
-def ScientistsController(request):
+def AuthorsController(request):
 
     Conference_id = 3
 
@@ -81,41 +84,41 @@ def ScientistsController(request):
             ConferenceMembersCount =  len(Conference['ItemIds'])
 
     search = ''
-    if 'search_scientist' in request.GET:
-        search = request.GET['search_scientist']
+    if 'search_author' in request.GET:
+        search = request.GET['search_author']
 
-    Scientists_list_main = []
+    Authors_list_main = []
 
-    for Scientist in Scientists_list:
-        if search.lower() in Scientist['name'].lower():
-            Scientists_list_main.append(Scientist)
+    for Author in Authors_list:
+        if search.lower() in Author['name'].lower():
+            Authors_list_main.append(Author)
 
-    return render(request, 'Scientists.html', {'data' : {
-        'Scientists': Scientists_list_main,
+    return render(request, 'Authors.html', {'data' : {
+        'Authors': Authors_list_main,
         'ConferenceMembersCount' : ConferenceMembersCount,
         'Conference_id' : Conference_id
     }})
 
 def ConferencesController(request, id):
 
-    Scientists_in_conf_list = []
+    Authors_in_conf_list = []
     cur_conference = []
     for Conference in Conferences_list:
         if Conference['id'] == id:
             cur_conference = Conference
             for i in Conference['ItemIds']:
-                for Scientist in Scientists_list:
-                    if Scientist['id'] == i:
-                        Scientists_in_conf_list.append(Scientist)
+                for Author in Authors_list:
+                    if Author['id'] == i:
+                        Authors_in_conf_list.append(Author)
     return render(request, 'Conferences.html', {'data' : {
         'id': id,
         'cur_conference': cur_conference,
-        'Scientists': Scientists_in_conf_list
+        'Authors': Authors_in_conf_list
     }})
 
-def ScientistDescriptionController(request, id):
-    return render(request, 'SingleScientist.html', {'data' : {
-        'Scientist' : Scientists_list[id-1],
+def AuthorDescriptionController(request, id):
+    return render(request, 'SingleAuthor.html', {'data' : {
+        'Author' : Authors_list[id-1],
         'id': id
     }})
 
