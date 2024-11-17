@@ -18,6 +18,10 @@
         <div class = "MembersCountText"> Количество участников:</div>
         <div  class = "MembersCount" >{{ data.members_count }}</div>
     </ui>
+    <ui class = "ConferenceParamBox"></div>
+        <div class = "ReviewResultText"> Результат рецензирования:</div>
+        <div  class = "ReviewResult" >{{ data.conf_review_result }}</div>
+    </ui>
     <form action = "{%url 'delete_conference_url' data.id%}" method = post>
         {% csrf_token %}
         <button name = "delConfBtn" type = "submit" class = "delConfBtn">Удалить конферецию</button>
@@ -31,7 +35,7 @@
             <img class = "Conference_card_img" src = "{{Author.image}}" >
             <div class = "Conference_card_name"> {{Author.name}}</div> 
             <div class = "manager_text"> Руководитель:</div>
-            {%if Author.leader == True%}
+            {%if Author.isCorresponding == True%}
             <label><input type="checkbox" class="manager_checkbox" id="happy" name="happy" checked></label>
             {%else%}
             <label><input type="checkbox" class="manager_checkbox" id="happy" name="happy"></label>

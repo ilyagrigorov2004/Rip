@@ -3,6 +3,7 @@ from datetime import date
 from django.http import HttpResponse
 import psycopg2
 from .models import  Conference, Mm, Author, AuthUser
+import random
 
 conn = psycopg2.connect(dbname="conferences_web", host="localhost", user="postgres", password="1111", port="5432")
 
@@ -67,19 +68,26 @@ def ConferencesController(request, id):
     for iAuthor in Author_in_con_list:
         author = getAuthorById(iAuthor.author_id)
         if author != None:
-            print (iAuthor.leader)
             Authors.append({
                 'image' : author.url,
                 'name' : author.name,
                 'department' : author.department,
-                'leader' : iAuthor.leader
+                'isCorresponding' : iAuthor.is_corresponding
             })
 
+    if CurDraftConf.conf_start_date == None:
+        CurDraftConf.conf_start_date = ''
+    if CurDraftConf.conf_end_date == None:
+        CurDraftConf.conf_end_date = ''
+    if CurDraftConf.members_count == None:
+        CurDraftConf.members_count = ''
+    
     return render(request, 'Conferences.html', {'data' : {
         'id': id,
         'conf_start_date': CurDraftConf.conf_start_date,
         'conf_end_date' : CurDraftConf.conf_end_date,
         'members_count' : CurDraftConf.members_count,
+        'conf_review_result' : CurDraftConf.review_result,
         'Authors': Authors
     }})
 
@@ -91,8 +99,8 @@ def AddAuthorController(request, id):
     curConf = getConferenceByUserId(current_user_id)
     if curConf == None:
         CurUser = AuthUser.objects.get(id=current_user_id)
-        curConf = Conference.objects.create(creator = CurUser.id, status = 'draft', date_created = date.today())
-    Mm.objects.get_or_create(conference_id=curConf.conference_id, author_id=Author.author_id, leader = False)
+        curConf = Conference.objects.create(creator = CurUser.id, status = 'draft', date_created = date.today(), review_result = random.randint(-2, 2))
+    Mm.objects.get_or_create(conference_id=curConf.conference_id, author_id=Author.author_id, is_corresponding = False)
 
     return redirect(AuthorsController)
 

@@ -27,6 +27,7 @@ class Conference(models.Model):
     conf_start_date = models.DateTimeField(blank=True, null=True)
     conf_end_date = models.DateTimeField(blank=True, null=True)
     members_count = models.IntegerField(blank=True, null=True)
+    review_result = models.IntegerField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -36,7 +37,7 @@ class Conference(models.Model):
 class Mm(models.Model):
     author_id = models.IntegerField()
     conference_id = models.IntegerField()
-    leader = models.BooleanField(blank=True, null=True)
+    is_corresponding = models.BooleanField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -53,7 +54,7 @@ class Author(models.Model):
     status = models.TextField()
     url = models.TextField(blank=True, null=True)
     department = models.TextField()
-    birthdate = models.DateField()
+    birthdate = models.TextField()
 
     class Meta:
         managed = False

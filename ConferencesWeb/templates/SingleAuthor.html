@@ -6,6 +6,6 @@
     <img class = "single_author_image" src = "{{data.Author.url}}">
     <div class = "single_author_description">Научные интересы: {{data.Author.description}}</div>
     <div class = "single_author_department">Кафедра: {{data.Author.department}}</div>
-    <div class = "single_author_birthdate">Дата рождения: {{data.Author.birthdate}}</div>
+    <div class = "single_author_birthdate">Дата рождения: {{data.Author.birthdate|date:'d-m-Y'}}</div>
 </div>
 {% endblock %}
