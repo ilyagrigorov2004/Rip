@@ -8,15 +8,19 @@
     <div class = "Conference_theme"> {{ data.cur_conference.theme }}</div>
     <ui class = "ConferenceParamBox"></div>
         <div class = "ConferenceParamText"> Начало:</div>
-        <input name = "StartDate" type = "text" class = ConferenceParamsInp value="{{ data.conf_start_date|date:'d-m-Y H:i:s'}}" autocomplete="off"></input>
+        <input name = "StartDate" type = "text" class = ConferenceParamsInp value="{{ data.conf_start_date }}" autocomplete="off"></input>
     </ui>
     <ui class = "ConferenceParamBox"></div>
         <div class = "ConferenceParamText"> Конец:</div>
-        <input name = "EndDate" type = "text" class = ConferenceParamsInp value="{{ data.conf_end_date|date:'d-m-Y H:i:s' }}" autocomplete="off"></input>
+        <input name = "EndDate" type = "text" class = ConferenceParamsInp value="{{ data.conf_end_date }}" autocomplete="off"></input>
     </ui>
     <ui class = "ConferenceParamBox"></div>
         <div class = "MembersCountText"> Количество участников:</div>
         <div  class = "MembersCount" >{{ data.members_count }}</div>
+    </ui>
+    <ui class = "ConferenceParamBox"></div>
+        <div class = "ReviewResultText"> Результат рецензирования:</div>
+        <div  class = "ReviewResult" >{{ data.conf_review_result }}</div>
     </ui>
     <form action = "{%url 'delete_conference_url' data.id%}" method = post>
         {% csrf_token %}
