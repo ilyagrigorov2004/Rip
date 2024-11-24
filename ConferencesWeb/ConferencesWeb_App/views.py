@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from datetime import date
+from datetime import datetime
 from django.http import HttpResponse
 import psycopg2
 from .models import  Conference, Mm, Author, AuthUser
@@ -16,13 +16,13 @@ def getAuthorById(AuthorId):
     return Author.objects.get(author_id=AuthorId)
 
 def getDraftByConferenceIdandUserId(ConfId, UserId):
-    return Conference.objects.filter(conference_id = ConfId, creator=UserId, status='draft').first()
+    return Conference.objects.filter(conference_id = ConfId, creator_id=UserId, status='draft').first()
 
 def getMMByConference(ConferenceId):
     return Mm.objects.filter(conference_id=ConferenceId).all()
 
 def getConferenceByUserId(UserId):
-    return Conference.objects.filter(creator=UserId, status='draft').first() 
+    return Conference.objects.filter(creator_id=UserId, status='draft').first() 
 
 def AuthorsController(request):
     AuthorsInConferenceCnt = 0
@@ -79,8 +79,8 @@ def ConferencesController(request, id):
         CurDraftConf.conf_start_date = ''
     if CurDraftConf.conf_end_date == None:
         CurDraftConf.conf_end_date = ''
-    if CurDraftConf.members_count == None:
-        CurDraftConf.members_count = ''
+    
+    CurDraftConf.members_count = len(Author_in_con_list)
     
     return render(request, 'Conferences.html', {'data' : {
         'id': id,
@@ -99,7 +99,7 @@ def AddAuthorController(request, id):
     curConf = getConferenceByUserId(current_user_id)
     if curConf == None:
         CurUser = AuthUser.objects.get(id=current_user_id)
-        curConf = Conference.objects.create(creator = CurUser.id, status = 'draft', date_created = date.today(), review_result = random.randint(-2, 2))
+        curConf = Conference.objects.create(creator_id = CurUser.id, status = 'draft', date_created = datetime.today(), review_result = random.randint(-2, 2))
     Mm.objects.get_or_create(conference_id=curConf.conference_id, author_id=Author.author_id, is_corresponding = False)
 
     return redirect(AuthorsController)
