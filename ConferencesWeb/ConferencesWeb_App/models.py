@@ -1,30 +1,28 @@
 from django.db import models
 from rest_framework.relations import SlugRelatedField
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, UserManager, BaseUserManager
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group, Permission
 
-class AuthUser(models.Model):
-    password = models.CharField(max_length=128)
-    last_login = models.DateTimeField(blank=True, null=True)
-    is_superuser = models.BooleanField()
-    username = models.CharField(unique=True, max_length=150)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150)
-    email = models.CharField(max_length=254)
-    is_staff = models.BooleanField()
-    is_active = models.BooleanField()
-    date_joined = models.DateTimeField()
-
-    class Meta:
-        managed = False
-        db_table = 'auth_user'
+class NewUserManager(UserManager):
+    def create_user(self,email,password=None, **extra_fields):
+        if not email:
+            raise ValueError('User must have an email address')
+        
+        email = self.normalize_email(email) 
+        user = self.model(email=email, **extra_fields) 
+        user.set_password(password)
+        user.save(using=self.db)
+        return user
 
 class Conference(models.Model):
     conference_id = models.AutoField(primary_key=True)
     status = models.TextField()
     date_created = models.DateTimeField()
-    creator = models.ForeignKey(AuthUser, on_delete=models.DO_NOTHING, null=True, related_name='creator_conferences')
+    creator = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, related_name='creator_conferences')
     date_formed = models.DateTimeField(blank=True, null=True)
     date_ended = models.DateTimeField(blank=True, null=True)
-    moderator = models.ForeignKey(AuthUser, on_delete=models.DO_NOTHING, null=True, related_name='ModeratorConferences')
+    moderator = models.ForeignKey(get_user_model(), on_delete=models.DO_NOTHING, null=True, related_name='ModeratorConferences')
     conf_start_date = models.DateTimeField(blank=True, null=True)
     conf_end_date = models.DateTimeField(blank=True, null=True)
     members_count = models.IntegerField(blank=True, null=True)

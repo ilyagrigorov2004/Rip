@@ -27,6 +27,22 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'ConferencesWeb_App',
     'rest_framework',
+    'drf_yasg',
+]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+
+}
+
+REDIS_HOST = 'localhost'
+
+REDIS_PORT = 6379
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:8000'
 ]
 
 MIDDLEWARE = [
