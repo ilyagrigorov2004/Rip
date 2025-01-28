@@ -25,7 +25,7 @@ def method_permission_classes(classes):
             self.permission_classes = classes        
             user = getUserBySessionId(self.request)
             if user == AnonymousUser():
-                return Response({"detail": "Authentication credentials were not provided."}, status=401)
+                return Response({"detail": "Authentication credentials were not providedsss."}, status=401)
             else:
                 try:
                     self.check_permissions(self.request)
@@ -55,6 +55,11 @@ class AuthorsList(APIView):
         if 'search_author' in request.GET:
             search_author = request.GET['search_author']
         authors = self.model_class.objects.filter(status='active', name__icontains=search_author).all()
+        
+        # Поиск по кафедре, если не найдено по фамилии
+        if not authors:
+            authors = self.model_class.objects.filter(status='active', department__icontains=search_author).all()
+
         serializer = self.serializer_class(authors, many=True)
 
         ActiveUser = getUserBySessionId(self.request)
@@ -338,7 +343,6 @@ class mm(APIView):
 class UserRegistration(APIView):
     model_class = get_user_model()
     serializer_class = AuthUserSerializer
-
     permission_classes = [permissions.AllowAny]
 
     @swagger_auto_schema(request_body=AuthUserSerializer)
