@@ -25,12 +25,12 @@ def method_permission_classes(classes):
             self.permission_classes = classes        
             user = getUserBySessionId(self.request)
             if user == AnonymousUser():
-                return Response({"detail": "Authentication credentials were not providedsss."}, status=401)
+                return Response({"detail": "Авторизация не пройдена."}, status=401)
             else:
                 try:
                     self.check_permissions(self.request)
                 except Exception as e:
-                    return Response({"detail": "You do not have permission to perform this action."}, status=403)
+                    return Response({"detail": "У Вас нет прав на выполнение этих действий"}, status=403)
             return func(self, *args, **kwargs)
         return decorated_func
     return decorator
@@ -50,6 +50,7 @@ class AuthorsList(APIView):
     model_class = Author
     serializer_class = AuthorSerializer
 
+    @swagger_auto_schema(query_serializer=AuthorsListQuerySerializer, responses={200: AuthorsListResponseeSerializer})
     def get(self, request): #список с фильтрацией
         search_author = ''
         if 'search_author' in request.GET:
@@ -81,8 +82,8 @@ class AuthorsList(APIView):
             'authors': serializer.data
         })
     
-    @method_permission_classes((IsAdmin,))
     @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsAdmin,))
     def post(self, request):    #добавление без изображения
         serializer = self.serializer_class(data = request.data)
 
@@ -103,8 +104,8 @@ class SingleAuthor(APIView):
         serializer = self.serializer_class(author)
         return Response(serializer.data)
 
-    @method_permission_classes((IsAdmin,))
     @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsAdmin,))
     def put(self, request, id): #изменение записи автор
         try:
             author = self.model_class.objects.get(author_id=id)
@@ -134,7 +135,6 @@ class AuthorAdding(APIView):
     serializer_class = MmSerializer
 
     @method_permission_classes((IsAuth,))
-    @swagger_auto_schema(request_body=serializer_class)
     def post(self, request, id):    #добавление автора в заявку
         try:
             author = Author.objects.get(author_id=id)
@@ -148,8 +148,8 @@ class AuthorImageUpload(APIView):
     model_class = Author
     serializer_class = AuthorSerializer
 
-    @method_permission_classes((IsAdmin,))
     @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsAdmin,))
     def post(self, request, id): #добавление изображения
         try:
             author = self.model_class.objects.get(author_id=id)
@@ -164,6 +164,7 @@ class ConferencesList(APIView):
     model_class = Conference
     serializer_class = ConferenceSerializer
 
+    @swagger_auto_schema(query_serializer=ConfSearchSerializer)
     @method_permission_classes((IsAuth,))
     def get(self, request):     #список конференций с фильтрацией
         filter_status = None
@@ -180,10 +181,15 @@ class ConferencesList(APIView):
 
         conferences = self.model_class.objects.filter(status__in=['formed', 'confirmed', 'rejected']).all()
 
-        if filter_status != None:
+        if filter_status != '':
             conferences = conferences.filter(status=filter_status)
-        if min_date_formed != None and max_date_formed!=None:
-            conferences = conferences.filter(date_formed__range=[min_date_formed, max_date_formed])
+        if min_date_formed != '':
+            conferences = conferences.filter(date_formed__gte=min_date_formed)
+        if max_date_formed != '':
+            conferences = conferences.filter(date_formed__lte=max_date_formed)
+
+
+
         if not (ActiveUser.is_staff or ActiveUser.is_superuser):
             conferences = conferences.filter(creator=ActiveUser)
 
@@ -213,8 +219,8 @@ class SingleConference(APIView):
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.data)
 
-    @method_permission_classes((IsAuth,))
     @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsAuth,))
     def put(self, request, id):     #изменение полей конференции
         ActiveUser = getUserBySessionId(request)
         try:
@@ -225,6 +231,12 @@ class SingleConference(APIView):
         except self.model_class.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
+        if 'conf_start_date' in request.data and 'conf_end_date' in request.data:
+            conf_start_date = datetime.strptime(request.data['conf_start_date'], '%Y-%m-%dT%H:%M')
+            conf_end_date = datetime.strptime(request.data['conf_end_date'], '%Y-%m-%dT%H:%M')
+            if conf_start_date >= conf_end_date:
+                return Response({'Error': 'Дата начала должна быть меньше даты окончания'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = self.serializer_class(conference, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -251,8 +263,8 @@ class ConferenceForming(APIView):
     model_class = Conference
     serializer_class = ConferenceSerializer
 
+    @swagger_auto_schema()
     @method_permission_classes((IsAuth,))
-    @swagger_auto_schema(request_body=serializer_class)
     def put(self, request, id): #сформировать создателем
         ActiveUser = getUserBySessionId(request)
         try:
@@ -261,10 +273,10 @@ class ConferenceForming(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         if conference.status != 'draft':
-            return Response({'Error':'You can form only draft conferences'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Error':'Можно изменять только черновые конференции'}, status=status.HTTP_400_BAD_REQUEST)
         
         if not conference.conf_start_date:
-            return Response({'Error': 'Required fields are not filled in'})
+            return Response({'Error': 'Заполните все поля'})
         
         conference.date_formed = datetime.now()
         conference.status = 'formed'
@@ -276,8 +288,8 @@ class ConferenceConfirming(APIView):
     model_class = Conference
     serializer_class = ConferenceSerializer
 
-    @method_permission_classes((IsManager,))
     @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsManager,))
     def put(self, request, id): #завершить модератором
         try:
             conference = self.model_class.objects.get(conference_id=id)
@@ -285,7 +297,7 @@ class ConferenceConfirming(APIView):
             return Response(status=status.HTTP_404_NOT_FOUND)
         
         if conference.status != 'formed':
-            return Response({'Error':'You can confirm only formed conferences'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Error':'Подтверждать можно только сформированные конференции'}, status=status.HTTP_400_BAD_REQUEST)
         
         conference.moderator = get_user_model().objects.get(id = getUserBySessionId(request).id)
         conference.date_ended = datetime.now()
@@ -311,7 +323,7 @@ class mm(APIView):
         ActiveUser = getUserBySessionId(request)
         conference = Conference.objects.get(conference_id=conf_id, creator = ActiveUser)
         if conference.status in ['confirmed', 'rejected']:
-            return Response({'Error':'You cant delete authors from moderated conferences'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Error':'Только черновая конференция может быть удалена'}, status=status.HTTP_400_BAD_REQUEST)
         try:
             mm = self.model_class.objects.get(conference_id=conf_id, author_id=author_id)
         except self.model_class.DoesNotExist:
@@ -319,21 +331,22 @@ class mm(APIView):
         mm.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    @swagger_auto_schema(query_serializer=MMChangeSerializer, responses={200: 'Success'})
     @method_permission_classes((IsAuth,))
-    @swagger_auto_schema(request_body=serializer_class)
     def put(self, request, conf_id, author_id): #изменение полей м-м
         ActiveUser = getUserBySessionId(request)
         conference = Conference.objects.get(conference_id=conf_id, creator = ActiveUser)
         if conference.status in ['confirmed', 'rejected']:
-            return Response({'Error':'You cant modify authors in moderated conferences'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'Error':'Изменять авторов можно только в черновых конференциях'}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             mm = self.model_class.objects.get(conference_id=conf_id, author_id=author_id)
         except self.model_class.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         isCorr = request.query_params.get('is_corresponding')
-        if isCorr not in ['0', '1']:
-            return Response({'Error': 'Invalid value for is_corresponding'}, status=status.HTTP_400_BAD_REQUEST)
+        print(isCorr)
+        if isCorr not in ['true', 'false']:
+            return Response({'Error': 'Неверное значение'}, status=status.HTTP_400_BAD_REQUEST)
         serializer = self.serializer_class(mm, data={'is_corresponding': isCorr}, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -342,15 +355,15 @@ class mm(APIView):
 
 class UserRegistration(APIView):
     model_class = get_user_model()
-    serializer_class = AuthUserSerializer
+    serializer_class = UserSerializer
     permission_classes = [permissions.AllowAny]
 
-    @swagger_auto_schema(request_body=AuthUserSerializer)
+    @swagger_auto_schema(request_body=UserSerializer)
     def post(self, request):
-        if not request.data.get('password') or not request.data.get('email'):
+        if not request.data.get('password') or not request.data.get('username'):
             return Response({"status": "Не указаны данные для регистрации"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if self.model_class.objects.filter(email=request.data.get('email'), username = request.data.get('username')).exists():
+        if self.model_class.objects.filter(email=request.data.get('email')).exists() or self.model_class.objects.filter(username=request.data.get('username')).exists():
             return Response({"status": "Пользователь с такими данными уже существует"}, status=status.HTTP_400_BAD_REQUEST)
         
         serializer = self.serializer_class(data=request.data)
@@ -370,9 +383,9 @@ class UserRegistration(APIView):
 
 class UserLK(APIView):
     model_class = get_user_model()
-    serializer_class = AuthUserSerializer
+    serializer_class = UserSerializer
 
-    @swagger_auto_schema(request_body=serializer_class)
+    @swagger_auto_schema(request_body=UserLKSerializer)
     def put(self, request):     #ЛК пользователя
         
         user = getUserBySessionId(request)
@@ -382,17 +395,20 @@ class UserLK(APIView):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         if serializer.is_valid():
             serializer.save()
+            if (request.data.get('password')):
+                user.set_password(request.data['password'])
+                user.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
 class UserLogIn(APIView):
     model_class = get_user_model()
-    serializer_class = AuthUserSerializer
+    serializer_class = UserSerializer
 
     @swagger_auto_schema(request_body=serializer_class)
     def post(self, request):    #аутентификация пользователя
         if not request.data.get('username') or not request.data.get('password'):
-            return Response({"error": "Authorization details not provided"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Заполните все поля авторизации"}, status=status.HTTP_400_BAD_REQUEST)
         
         user = authenticate(username=request.data['username'], password=request.data['password'])
         if user is not None:
@@ -405,11 +421,11 @@ class UserLogIn(APIView):
             response.set_cookie('session_id', random_key)
             return response
         
-        return Response({"error": "Incorrect login or password"}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Неверный логин или пароль"}, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLogOut(APIView):
     model_class = get_user_model()
-    serializer_class = AuthUserSerializer    
+    serializer_class = UserSerializer    
 
     @swagger_auto_schema(request_body=serializer_class)
     def post(self, request):    #деавторизация пользователя

@@ -11,7 +11,7 @@ def getUserBySessionId(request):
         try:
             email = session_storage.get(ssid).decode('utf-8')
             user = get_user_model().objects.get(email=email)
-        except AttributeError:
+        except (AttributeError, get_user_model().DoesNotExist):
             user = AnonymousUser()
     else:
         user = AnonymousUser() 

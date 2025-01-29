@@ -3,12 +3,12 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from collections import OrderedDict
 
-class AuthUserSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     is_staff = serializers.BooleanField(default=False, required=False)
     is_superuser = serializers.BooleanField(default=False, required=False)
     class Meta:
         model = get_user_model()
-        fields = ['email', 'username', 'is_staff', 'is_superuser']
+        fields = ['email', 'is_staff', 'is_superuser', 'username', 'first_name', 'last_name', 'password']
 
         def get_fields(self):
             new_fields = OrderedDict()
@@ -85,3 +85,25 @@ class SingleConfSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conference
         fields = ['conference_id', 'status', 'date_created', 'creator', 'date_formed', 'date_ended', 'moderator', 'conf_start_date', 'conf_end_date', 'members_count', 'review_result', 'authors']
+
+class AuthorsListQuerySerializer(serializers.Serializer):
+    search_author = serializers.CharField(required=False)
+
+class AuthorsListResponseeSerializer(serializers.Serializer):
+    authors = AuthorSerializer(many=True)
+    draft_conference_id = serializers.IntegerField()
+    draft_conference_authors_count = serializers.IntegerField()
+
+class UserLKSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=False)
+    first_name = serializers.CharField(required=False)
+    last_name = serializers.CharField(required=False)
+    password = serializers.CharField(required=False)
+
+class MMChangeSerializer(serializers.Serializer):
+    is_corresponding = serializers.BooleanField(required=False)
+
+class ConfSearchSerializer(serializers.Serializer):
+    status = serializers.CharField(required=False)
+    min_date_formed = serializers.DateTimeField(required=False)
+    max_date_formed = serializers.DateTimeField(required=False)
