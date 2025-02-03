@@ -375,8 +375,8 @@ class UserRegistration(APIView):
             username=request.data['username'],
             email=request.data['email'], 
             password=request.data['password'],
-            is_staff=request.data['is_staff'],
-            is_superuser=request.data['is_superuser']
+            first_name=request.data['first_name'],
+            last_name=request.data['last_name']
         )
         return Response({'status': 'Успех'}, status=status.HTTP_200_OK)
        
