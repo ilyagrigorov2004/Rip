@@ -1,5 +1,5 @@
 import psycopg2
-from ConferencesWeb_App.models import  Conference, Mm, Author
+from ConferencesWeb_App.models import  Conference, Mm, Author, Attribute, AttributeAuthor
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from ConferencesWeb_App.serializers import *
@@ -14,6 +14,7 @@ import uuid
 from .GetUserBySessionId import getUserBySessionId, session_storage
 from django.contrib.auth.models import AnonymousUser
 from .permissions import *
+from .services.qr_generate import generate_conf_qr
 
 conn = psycopg2.connect(dbname="conferences_web", host="localhost", user="postgres", password="1111", port="5432")
 
@@ -53,17 +54,20 @@ class AuthorsList(APIView):
     @swagger_auto_schema(query_serializer=AuthorsListQuerySerializer, responses={200: AuthorsListResponseeSerializer})
     def get(self, request): #список с фильтрацией
         search_author = ''
+        ActiveUser = getUserBySessionId(self.request)
         if 'search_author' in request.GET:
             search_author = request.GET['search_author']
-        authors = self.model_class.objects.filter(status='active', name__icontains=search_author).all()
-        
-        # Поиск по кафедре, если не найдено по фамилии
-        if not authors:
-            authors = self.model_class.objects.filter(status='active', department__icontains=search_author).all()
+
+        authors = self.model_class.objects.filter(name__icontains=search_author).all()
+        if len(authors) == 0:
+            authors = self.model_class.objects.filter(department__icontains=search_author).all()
+
+        if(ActiveUser):        
+            if not (ActiveUser.is_staff or ActiveUser.is_superuser):
+                authors = authors.filter(status='active').all()
 
         serializer = self.serializer_class(authors, many=True)
 
-        ActiveUser = getUserBySessionId(self.request)
         if ActiveUser!=AnonymousUser():
             draft_conference = ActiveUser.creator_conferences.filter(status='draft').first()
             if draft_conference:
@@ -148,7 +152,7 @@ class AuthorImageUpload(APIView):
     model_class = Author
     serializer_class = AuthorSerializer
 
-    @swagger_auto_schema(request_body=serializer_class)
+    @swagger_auto_schema(request_body=addPicSerializer, responses={200: AuthorSerializer})
     @method_permission_classes((IsAdmin,))
     def post(self, request, id): #добавление изображения
         try:
@@ -156,9 +160,10 @@ class AuthorImageUpload(APIView):
         except self.model_class.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         img_result = add_pic(author, request.FILES.get('image'))
+        resp = self.serializer_class(author)
         if 'error' in img_result.data:
             return img_result
-        return Response(status=status.HTTP_200_OK)
+        return Response(resp.data, status=status.HTTP_200_OK)
 
 class ConferencesList(APIView):     
     model_class = Conference
@@ -177,18 +182,17 @@ class ConferencesList(APIView):
         if 'min_date_formed' in request.GET:
             min_date_formed = request.GET['min_date_formed']
         if 'max_date_formed' in request.GET:
-            max_date_formed = request.GET['max_date_formed']
+            if request.GET['max_date_formed'] != '':
+                max_date_formed = (datetime.strptime(request.GET['max_date_formed'], '%Y-%m-%d') + timedelta(days=1)).strftime('%Y-%m-%d')
 
         conferences = self.model_class.objects.filter(status__in=['formed', 'confirmed', 'rejected']).all()
 
         if filter_status != '':
             conferences = conferences.filter(status=filter_status)
-        if min_date_formed != '':
+        if min_date_formed:
             conferences = conferences.filter(date_formed__gte=min_date_formed)
-        if max_date_formed != '':
+        if max_date_formed:
             conferences = conferences.filter(date_formed__lte=max_date_formed)
-
-
 
         if not (ActiveUser.is_staff or ActiveUser.is_superuser):
             conferences = conferences.filter(creator=ActiveUser)
@@ -231,15 +235,21 @@ class SingleConference(APIView):
         except self.model_class.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
-        if 'conf_start_date' in request.data and 'conf_end_date' in request.data:
-            conf_start_date = datetime.strptime(request.data['conf_start_date'], '%Y-%m-%dT%H:%M')
-            conf_end_date = datetime.strptime(request.data['conf_end_date'], '%Y-%m-%dT%H:%M')
-            if conf_start_date >= conf_end_date:
+        if 'conf_start_date' in request.data and 'conf_end_date' in request.data and request.data['conf_start_date'] != '' and request.data['conf_end_date'] != '':
+            conference.conf_start_date = datetime.strptime(request.data['conf_start_date'], '%Y-%m-%dT%H:%M')
+            conference.conf_end_date = datetime.strptime(request.data['conf_end_date'], '%Y-%m-%dT%H:%M')
+            if request.data['conf_start_date'] >= request.data['conf_end_date']:
                 return Response({'Error': 'Дата начала должна быть меньше даты окончания'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            request.data.pop('conf_start_date', None)
+            request.data.pop('conf_end_date', None)
+
+        if (ActiveUser.is_superuser or ActiveUser.is_staff) and 'review_result' in request.data :
+            conference.review_result = request.data['review_result']
 
         serializer = self.serializer_class(conference, data=request.data, partial=True)
+        conference.save()
         if serializer.is_valid():
-            serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -276,7 +286,7 @@ class ConferenceForming(APIView):
             return Response({'Error':'Можно изменять только черновые конференции'}, status=status.HTTP_400_BAD_REQUEST)
         
         if not conference.conf_start_date:
-            return Response({'Error': 'Заполните все поля'})
+            return Response({'Error': 'Заполните все поля'}, status=status.HTTP_400_BAD_REQUEST)
         
         conference.date_formed = datetime.now()
         conference.status = 'formed'
@@ -288,7 +298,7 @@ class ConferenceConfirming(APIView):
     model_class = Conference
     serializer_class = ConferenceSerializer
 
-    @swagger_auto_schema(request_body=serializer_class)
+    @swagger_auto_schema(query_serializer=ConfirmSerializer)
     @method_permission_classes((IsManager,))
     def put(self, request, id): #завершить модератором
         try:
@@ -301,12 +311,15 @@ class ConferenceConfirming(APIView):
         
         conference.moderator = get_user_model().objects.get(id = getUserBySessionId(request).id)
         conference.date_ended = datetime.now()
-        IsConfirmed = request.query_params.get('isConfirmed')
-        
-        if IsConfirmed == '1':
-            conference.status = 'confirmed'
-        else:
-            conference.status = 'rejected'
+        IsConfirmed = request.GET['is_confirmed']
+        if IsConfirmed:
+            if IsConfirmed == '1':
+                conference.status = 'confirmed'
+            else:
+                conference.status = 'rejected'
+
+        qr_code_base64 = generate_conf_qr(conference)
+        conference.qr = qr_code_base64
         
         conference.conf_end_date = conference.conf_start_date + timedelta(hours=2)
         conference.members_count = Mm.objects.filter(conference_id=id).count()
@@ -376,7 +389,7 @@ class UserRegistration(APIView):
             email=request.data['email'], 
             password=request.data['password'],
             first_name=request.data['first_name'],
-            last_name=request.data['last_name']
+            last_name=request.data['last_name'],
         )
         return Response({'status': 'Успех'}, status=status.HTTP_200_OK)
        
@@ -432,3 +445,79 @@ class UserLogOut(APIView):
         session_id = request.COOKIES.get('session_id')
         session_storage.delete(session_id)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class newAttribute(APIView):
+    model_class = Attribute
+    serializer_class = AttributeSerializer
+
+    @swagger_auto_schema(request_body=serializer_class)
+    @method_permission_classes((IsManager,))
+    def post(self, request):    #добавление атрибута
+        if(self.model_class.objects.filter(name=request.data['name']).exists()):
+            return Response({'Error': 'Атрибут с таким именем уже существует'}, status=status.HTTP_400_BAD_REQUEST)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    
+class Attribute_by_id(APIView):
+    model_class = Attribute
+    serializer_class = AttributeSerializer
+
+    @swagger_auto_schema()
+    @method_permission_classes((IsManager,))
+    def delete(self, request, id):
+        try:
+            attribute = self.model_class.objects.get(id=id)
+        except self.model_class.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        attribute.delete()
+        AttributeAuthor.objects.filter(attr_id=id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+class Attr_Author(APIView):
+    model_class = AttributeAuthor
+    serializer_class = AttributeAuthorSerializer
+
+    @swagger_auto_schema(request_body=EditAttrValueSerializer)
+    @method_permission_classes((IsManager,))
+    def put(self, request, author_id, attr_id):
+        if request.data['value'] == '':
+            try: 
+                self.model_class.objects.get(author_id=author_id, attr_id=attr_id).delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except self.model_class.DoesNotExist:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+        attribute = self.model_class.objects.get_or_create(author_id=author_id, attr_id=attr_id)[0]
+        serializer = self.serializer_class(attribute, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+class Attrs_by_author(APIView):
+    model_class = AttributeAuthor
+    serializer_class = AttributeAuthorSerializer
+    
+    @swagger_auto_schema(responses = {200: AttrInAuthorRespSerializer})
+    def get(self, request, author_id):
+        empty_attrs = Attribute.objects.all()
+
+        resp = []
+        for attr in empty_attrs:
+            resp.append({
+                'id': None, 
+                'attr_id': attr.id, 
+                'author_id': author_id, 
+                'name': attr.name,
+                'value': ''})  
+        for item in resp:
+            if AttributeAuthor.objects.filter(author_id=author_id, attr_id=item['attr_id']):
+                item['value'] = AttributeAuthor.objects.get(author_id=author_id, attr_id=item['attr_id']).value
+        serializer = AttrInAuthorRespSerializer(resp, many=True)
+        return Response(serializer.data)

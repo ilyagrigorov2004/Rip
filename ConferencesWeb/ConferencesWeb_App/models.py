@@ -27,6 +27,7 @@ class Conference(models.Model):
     conf_end_date = models.DateTimeField(blank=True, null=True)
     members_count = models.IntegerField(blank=True, null=True)
     review_result = models.IntegerField(blank=True, null=True)
+    qr  = models.TextField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -56,3 +57,23 @@ class Mm(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['author_id', 'conference_id'], name='u_key')
         ]
+
+class Attribute(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.TextField()
+
+    class Meta:
+        managed = False
+        db_table = 'attribute'
+
+
+class AttributeAuthor(models.Model):
+    id = models.AutoField(primary_key=True)
+    attr_id = models.IntegerField()
+    author_id = models.IntegerField()
+    value = models.TextField(blank=True, null=True, default='')
+
+    class Meta:
+        managed = False
+        db_table = 'attribute_author'
+        unique_together = (('attr_id', 'author_id'),)

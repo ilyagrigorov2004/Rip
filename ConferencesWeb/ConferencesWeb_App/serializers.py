@@ -1,4 +1,4 @@
-from ConferencesWeb_App.models import Conference, Mm, Author
+from ConferencesWeb_App.models import Conference, Mm, Author, Attribute, AttributeAuthor
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from collections import OrderedDict
@@ -34,7 +34,7 @@ class ConferenceSerializer(serializers.ModelSerializer):
     moderator = serializers.SlugRelatedField(slug_field='username', read_only=True)
     class Meta:
         model = Conference
-        fields = ['conference_id', 'status', 'date_created', 'creator', 'date_formed', 'date_ended', 'moderator', 'conf_start_date', 'conf_end_date', 'members_count', 'review_result']
+        fields = ['conference_id', 'status', 'date_created', 'creator', 'date_formed', 'date_ended', 'moderator', 'conf_start_date', 'conf_end_date', 'members_count', 'review_result', 'qr']
 
     def get_fields(self):
         new_fields = OrderedDict()
@@ -86,6 +86,34 @@ class SingleConfSerializer(serializers.ModelSerializer):
         model = Conference
         fields = ['conference_id', 'status', 'date_created', 'creator', 'date_formed', 'date_ended', 'moderator', 'conf_start_date', 'conf_end_date', 'members_count', 'review_result', 'authors']
 
+class AttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = ['id', 'name']
+
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields 
+
+class AttributeAuthorSerializer(serializers.ModelSerializer):
+    attr_id = serializers.IntegerField()
+    author_id = serializers.IntegerField()
+    value = serializers.CharField(required=False)
+
+    class Meta:
+        model = AttributeAuthor
+        fields = ['id', 'attr_id', 'author_id', 'value']
+
+    def get_fields(self):
+        new_fields = OrderedDict()
+        for name, field in super().get_fields().items():
+            field.required = False
+            new_fields[name] = field
+        return new_fields 
+
 class AuthorsListQuerySerializer(serializers.Serializer):
     search_author = serializers.CharField(required=False)
 
@@ -107,3 +135,18 @@ class ConfSearchSerializer(serializers.Serializer):
     status = serializers.CharField(required=False)
     min_date_formed = serializers.DateTimeField(required=False)
     max_date_formed = serializers.DateTimeField(required=False)
+
+class addPicSerializer(serializers.Serializer):
+    image = serializers.ImageField(required=False)
+
+class ConfirmSerializer(serializers.Serializer):
+    is_сonfirmed = serializers.IntegerField(required=False)
+
+class EditAttrValueSerializer(serializers.Serializer):
+    value = serializers.CharField(required=False)
+
+class AttrInAuthorRespSerializer(serializers.Serializer):
+    attr_id = serializers.IntegerField()
+    author_id = serializers.IntegerField()
+    name = serializers.CharField()
+    value = serializers.CharField(required=False)

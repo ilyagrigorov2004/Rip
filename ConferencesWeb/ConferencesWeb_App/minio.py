@@ -2,6 +2,7 @@ from django.conf import settings
 from minio import Minio
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework.response import *
+import uuid
 
 def process_file_upload(file_object: InMemoryUploadedFile, client, image_name):
     try:
@@ -24,8 +25,8 @@ def add_pic(author, pic):
            secret_key=settings.AWS_SECRET_ACCESS_KEY,
            secure=settings.MINIO_USE_SSL
     )
-    i = author.author_id
-    img_obj_name = f"{i}.jpg"
+    random_key = uuid.uuid4().hex[:8]
+    img_obj_name = f"{random_key}.jpg"
 
     if pic == None:
         return Response({"error": "No image."})
@@ -34,6 +35,7 @@ def add_pic(author, pic):
     if 'error' in result:
         return Response(result)
 
+    delete_pic(author)
     author.url = result
     author.save()
 

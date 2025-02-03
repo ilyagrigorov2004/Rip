@@ -41,4 +41,9 @@ urlpatterns = [
     path('User/register/', views.UserRegistration.as_view(), name='UserRegistration_url'),
     path('User/login/', views.UserLogIn.as_view(), name='UserLogin_url'),
     path('User/logout/', views.UserLogOut.as_view(), name='UserLogout_url'),
+
+    path('Attribute/add/', views.newAttribute.as_view(), name='Attribute_url'), 
+    path('Attribute/<int:id>/', views.Attribute_by_id.as_view(), name='Attribute_by_id_url'),
+    path('Attribute/<int:author_id>/<int:attr_id>/addAuthorsAttr/', views.Attr_Author.as_view(), name='AttributeAuthor_url'),
+    path('Attribute/<int:author_id>/getAuthorsAttr/', views.Attrs_by_author.as_view(), name='AttributeAuthor_url'),
 ]
