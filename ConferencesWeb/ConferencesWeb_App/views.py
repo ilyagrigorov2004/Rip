@@ -15,6 +15,8 @@ from .GetUserBySessionId import getUserBySessionId, session_storage
 from django.contrib.auth.models import AnonymousUser
 from .permissions import *
 from .services.qr_generate import generate_conf_qr
+from django.utils import timezone
+from datetime import datetime
 
 conn = psycopg2.connect(dbname="conferences_web", host="localhost", user="postgres", password="1111", port="5432")
 
@@ -62,8 +64,8 @@ class AuthorsList(APIView):
         if len(authors) == 0:
             authors = self.model_class.objects.filter(department__icontains=search_author).all()
 
-        if(ActiveUser):        
-            if not (ActiveUser.is_staff or ActiveUser.is_superuser):
+        if(ActiveUser):
+            if not (ActiveUser.is_staff or ActiveUser.is_superuser) or ActiveUser==AnonymousUser():
                 authors = authors.filter(status='active').all()
 
         serializer = self.serializer_class(authors, many=True)
@@ -311,7 +313,8 @@ class ConferenceConfirming(APIView):
         
         conference.moderator = get_user_model().objects.get(id = getUserBySessionId(request).id)
         conference.date_ended = datetime.now()
-        IsConfirmed = request.GET['is_confirmed']
+        conference.date_ended = timezone.make_aware(conference.date_ended)
+        IsConfirmed = request.query_params.get('is_confirmed')
         if IsConfirmed:
             if IsConfirmed == '1':
                 conference.status = 'confirmed'
