@@ -140,7 +140,7 @@ class addPicSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False)
 
 class ConfirmSerializer(serializers.Serializer):
-    is_сonfirmed = serializers.IntegerField(required=False)
+    is_confirmed = serializers.IntegerField(required=False)
 
 class EditAttrValueSerializer(serializers.Serializer):
     value = serializers.CharField(required=False)
@@ -150,3 +150,16 @@ class AttrInAuthorRespSerializer(serializers.Serializer):
     author_id = serializers.IntegerField()
     name = serializers.CharField()
     value = serializers.CharField(required=False)
+
+class logInResponseSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    refresh_token = serializers.CharField()
+    email = serializers.EmailField()
+    username = serializers.CharField()
+    is_staff = serializers.BooleanField()
+    is_superuser = serializers.BooleanField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+
+class RefreshTokenSerializer(serializers.Serializer):
+    refresh_token = serializers.CharField()

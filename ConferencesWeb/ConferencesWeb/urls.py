@@ -41,6 +41,7 @@ urlpatterns = [
     path('User/register/', views.UserRegistration.as_view(), name='UserRegistration_url'),
     path('User/login/', views.UserLogIn.as_view(), name='UserLogin_url'),
     path('User/logout/', views.UserLogOut.as_view(), name='UserLogout_url'),
+    path('User/refresh/', views.RefreshToken.as_view(), name='UserRT'), #обновление jwt и refresh токена при помощи refresh токена
 
     path('Attribute/add/', views.newAttribute.as_view(), name='Attribute_url'), 
     path('Attribute/<int:id>/', views.Attribute_by_id.as_view(), name='Attribute_by_id_url'),

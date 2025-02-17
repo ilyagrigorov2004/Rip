@@ -1,19 +1,19 @@
 from rest_framework import permissions
-from .GetUserBySessionId import getUserBySessionId
+from .auth_utils import getUserByToken
 
 class IsManager(permissions.BasePermission):
     def has_permission(self, request, view):
-        user = getUserBySessionId(request)
+        user = getUserByToken(request)
         return bool(user and (user.is_staff or user.is_superuser))
 
 class IsAdmin(permissions.BasePermission):
     def has_permission(self, request, view):
-        user = getUserBySessionId(request)
+        user = getUserByToken(request)
         return bool(user and user.is_superuser)
     
 class IsAuth(permissions.BasePermission):
     def has_permission(self, request, view):
-        user = getUserBySessionId(request)
+        user = getUserByToken(request)
         if (user and user.is_authenticated):
             return True
         else:
@@ -21,5 +21,5 @@ class IsAuth(permissions.BasePermission):
     
 class IsAuthOrReadOnly(permissions.BasePermission):
     def has_permission(self, request, view):
-        user = getUserBySessionId(request)
+        user = getUserByToken(request)
         return bool(user) or request.method in permissions.SAFE_METHODS
